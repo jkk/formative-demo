@@ -16,6 +16,7 @@
 
 (def demo-form
   {:enctype "multipart/form-data"
+   :renderer :bootstrap-horizontal
    :fields [{:name :h1 :type :heading :text "Section 1"}
             {:name :full-name}
             {:name :email :type :email}
@@ -39,6 +40,16 @@
                  [:min-length 2 :flavors "Please select two or more flavors"]]
    :validator validate-upload})
 
+(def renderer-form
+  {:method "get"
+   :renderer :inline
+   :submit-label nil
+   :fields [{:name :renderer
+             :type :select
+             :options ["bootstrap-horizontal"
+                       "bootstrap-stacked"]
+             :onchange "this.form.submit()"}]})
+
 (defn layout [& body]
   (page/html5
     [:head
@@ -54,11 +65,17 @@
     (page/include-js "//raw.github.com/grevory/bootstrap-file-input/master/bootstrap.file-input.js")))
 
 (defn show-demo-form [params & {:keys [problems]}]
-  (let [defaults {:spam true
+  (let [renderer (if (:renderer params)
+                   (keyword (:renderer params))
+                   :bootstrap-horizontal)
+        defaults {:spam true
                   :date (java.util.Date.)}]
     (layout
+      [:div.pull-right
+       (f/render-form (assoc renderer-form :values params))]
       [:h1 "Formative Demo"]
       (f/render-form (assoc demo-form
+                            :renderer renderer
                             :values (merge defaults params)
                             :problems problems)))))
 
@@ -67,7 +84,8 @@
     (let [values (fp/parse-params demo-form params)]
       (layout
         [:h1 "Thank you!"]
-        [:pre.prettyprint.lang-clj (with-out-str (pprint values))]))))
+        [:pre.prettyprint.lang-clj (with-out-str (pprint values))]
+        [:p [:a {:href "/"} "Back to the form"]]))))
 
 (defroutes routes
   (GET "/" [& params] (show-demo-form params))
