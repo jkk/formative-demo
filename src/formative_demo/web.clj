@@ -16,7 +16,6 @@
 
 (def demo-form
   {:enctype "multipart/form-data"
-   :renderer :bootstrap-horizontal
    :fields [{:name :h1 :type :heading :text "Section 1"}
             {:name :full-name}
             {:name :email :type :email}
