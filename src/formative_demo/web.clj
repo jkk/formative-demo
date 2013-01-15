@@ -74,6 +74,12 @@
       [:div.pull-right
        (f/render-form (assoc renderer-form :values params))]
       [:h1 "Formative Demo"]
+      [:p "This is a demo of the "
+       [:a {:href "https://github.com/jkk/formative"}
+        "Formative"]
+       " Clojure library. "
+       [:a {:href "https://github.com/jkk/formative-demo"}
+        "View the demo source code"]]
       (f/render-form (assoc demo-form
                             :renderer renderer
                             :values (merge defaults params)
