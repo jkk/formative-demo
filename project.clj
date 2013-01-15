@@ -8,7 +8,9 @@
                  [ring/ring-core "1.1.7"]
                  [ring/ring-jetty-adapter "1.1.7"]
                  [ring/ring-devel "1.1.7"]
-                 [environ "0.3.0"]]
+                 [environ "0.3.0"]
+                 [formative "0.3.1"]
+                 [hiccup "1.0.2"]]
   :min-lein-version "2.0.0"
   :plugins [[environ/environ.lein "0.3.0"]]
   :hooks [environ.leiningen.hooks]
