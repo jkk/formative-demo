@@ -78,11 +78,55 @@
         "Formative"]
        " Clojure library. "
        [:a {:href "https://github.com/jkk/formative-demo"}
-        "View the demo source code"]]
+        "View the full demo source code"]]
+      [:div.pull-left {:style "width: 55%"}
+       (f/render-form (assoc demo-form
+                             :renderer renderer
+                             :values (merge defaults params)
+                             :problems problems))]
+      [:div.pull-right {:style "width: 43%"}
+       [:pre.prettyprint.lang-clj {:style "word-wrap: normal; white-space: pre; overflow: scroll; font-size: 12px; border: none; background: #f8f8f8; padding: 10px"}
+        ";; Simplified source
+
+(def demo-form
+  {:enctype \"multipart/form-data\"
+   :fields [{:name :h1 :type :heading :text \"Section 1\"}
+            {:name :full-name}
+            {:name :email :type :email}
+            {:name :spam :type :checkbox :label \"Yes, please spam me.\"}
+            {:name :password :type :password}
+            {:name :password-confirm :type :password}
+            {:name :h2 :type :heading :text \"Section 2\"}
+            {:name :note :type :html
+             :html [:div.alert.alert-info \"Please make note of this note.\"]}
+            {:name :date :type :date-select}
+            {:name :flavors :type :checkboxes
+             :options [\"Chocolate\" \"Vanilla\" \"Strawberry\" \"Mint\"]}
+            {:name :h3 :type :heading :text \"Section 3\"}
+            {:name :state :type :us-state
+             :placeholder \"Select a state\"}
+            {:name :explanation :type :textarea :label \"Explain yourself\"}
+            {:name :picture :type :file :title \"Choose a file\"}]
+   :validations [[:required [:full-name :email :password :state]]
+                 [:min-length 8 :password]
+                 [:equal [:password :password-confirm]]
+                 [:min-length 2 :flavors \"Please select two or more flavors\"]]})
+
+(defn show-demo-form [params & {:keys [problems]}]
+  (let [defaults {:spam true
+                  :date (java.util.Date.)}]
+    (layout
+      [:h1 \"Formative Demo\"]
       (f/render-form (assoc demo-form
-                            :renderer renderer
                             :values (merge defaults params)
                             :problems problems)))))
+
+(defn submit-demo-form [params]
+  (fp/with-fallback (partial show-demo-form params :problems)
+    (let [values (fp/parse-params demo-form params)]
+      (layout
+        [:h1 \"Thank you!\"]
+        [:pre (prn-str values)]))))"]])))
 
 (defn submit-demo-form [params]
   (fp/with-fallback (partial show-demo-form params :problems)
