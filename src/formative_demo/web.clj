@@ -61,7 +61,7 @@
     (page/include-js "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js")
     (page/include-js "//google-code-prettify.googlecode.com/svn/trunk/src/prettify.js")
     (page/include-js "//google-code-prettify.googlecode.com/svn/trunk/src/lang-clj.js")
-    (page/include-js "//raw.github.com/grevory/bootstrap-file-input/master/bootstrap.file-input.js")))
+    (page/include-js "https://raw.github.com/grevory/bootstrap-file-input/master/bootstrap.file-input.js")))
 
 (defn show-demo-form [params & {:keys [problems]}]
   (let [renderer (if (:renderer params)
