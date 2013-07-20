@@ -144,14 +144,14 @@
                             :problems problems)))))
 
 (defn submit-demo-form [params]
-  (fp/with-fallback (partial show-demo-form params :problems)
+  (fp/with-fallback #(show-demo-form params :problems %)
     (let [values (fp/parse-params demo-form params)]
       (layout
         [:h1 \"Thank you!\"]
         [:pre (prn-str values)]))))"]])))
 
 (defn submit-demo-form [params]
-  (fp/with-fallback (partial show-demo-form params :problems)
+  (fp/with-fallback #(show-demo-form params :problems %)
     (let [values (fp/parse-params demo-form params)]
       (layout
         [:h1 "Thank you!"]
