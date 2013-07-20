@@ -15,10 +15,9 @@
       {:keys [:picture] :msg "JPG files only"})))
 
 (def demo-form
-  {:enctype "multipart/form-data"
-   :fields [{:name :h1 :type :heading :text "Section 1"}
+  {:fields [{:name :h1 :type :heading :text "Section 1"}
             {:name :full-name}
-            {:name :email :type :email}
+            {:name "user[email]" :type :email}
             {:name :spam :type :checkbox :label "Yes, please spam me."}
             {:name :password :type :password}
             {:name :password-confirm :type :password}
@@ -26,6 +25,7 @@
             {:name :note :type :html
              :html [:div.alert.alert-info "Please make note of this note."]}
             {:name :date :type :date-select}
+            {:name :time :type :time-select}
             {:name :flavors :type :checkboxes
              :options ["Chocolate" "Vanilla" "Strawberry" "Mint"]}
             {:name :h3 :type :heading :text "Section 3"}
@@ -33,15 +33,16 @@
              :placeholder "Select a state"}
             {:name :explanation :type :textarea :label "Explain yourself"}
             {:name :picture :type :file :title "Choose a file"}]
-   :validations [[:required [:full-name :email :password :state]]
-                 [:min-length 8 :password]
+   :validations [[:required [:full-name "user[email]" :password :state]]
+                 [:min-length 4 :password]
                  [:equal [:password :password-confirm]]
                  [:min-length 2 :flavors "Please select two or more flavors"]]
-   :validator validate-upload})
+   :validator validate-upload
+   :enctype "multipart/form-data"})
 
 (def renderer-form
   {:method "get"
-   :renderer :inline
+   ;:renderer :inline
    :submit-label nil
    :fields [{:name :renderer
              :type :select
@@ -58,6 +59,10 @@
      (page/include-css "//google-code-prettify.googlecode.com/svn/trunk/src/prettify.css")
      [:style
       "body { margin: 2em; }"
+      "h1 { margin-bottom: 20px; }"
+      ".form-horizontal .field-group { margin-bottom: 10px; }"
+      ".well form, .well .field-group { margin-bottom: 0; }"
+      ".heading-row h3 { margin-bottom: 5px; }"
       ".form-table { width: 100%; }"
       ".form-table th { text-align: left; }"
       ".form-table h3 { border-bottom: 1px solid #ddd; }"
@@ -78,32 +83,34 @@
   (let [renderer (if (:renderer params)
                    (keyword (:renderer params))
                    :bootstrap-horizontal)
+        now (java.util.Date.)
         defaults {:spam true
-                  :date (java.util.Date.)}]
+                  :date now
+                  :time now}]
     (layout
-      [:div.pull-right
+      [:div.pull-right.well.well-small
        (f/render-form (assoc renderer-form :values params))]
       [:h1 "Formative Demo"]
       [:p "This is a demo of the "
        [:a {:href "https://github.com/jkk/formative"}
         "Formative"]
-       " Clojure library. "
+       " library for Clojure and ClojureScript. "
        [:a {:href "https://github.com/jkk/formative-demo"}
-        "View the full demo source code"]]
-      [:div.pull-left {:style "width: 55%"}
+        "View the full demo source code."]]
+      [:p "Submit the form to see how the data gets validated and processed."]
+      [:div.pull-left {:style "width: 50%"}
        (f/render-form (assoc demo-form
                              :renderer renderer
                              :values (merge defaults params)
                              :problems problems))]
-      [:div.pull-right {:style "width: 43%"}
-       [:pre.prettyprint.lang-clj {:style "word-wrap: normal; white-space: pre; overflow: scroll; font-size: 12px; border: none; background: #f8f8f8; padding: 10px"}
+      [:div.pull-right {:style "width: 47%"}
+       [:pre.prettyprint.lang-clj {:style "word-wrap: normal; white-space: pre; overflow: hidden; font-size: 12px; border: none; background: #f8f8f8; padding: 10px"}
         ";; Simplified source
 
 (def demo-form
-  {:enctype \"multipart/form-data\"
-   :fields [{:name :h1 :type :heading :text \"Section 1\"}
+  {:fields [{:name :h1 :type :heading :text \"Section 1\"}
             {:name :full-name}
-            {:name :email :type :email}
+            {:name \"user[email]\" :type :email}
             {:name :spam :type :checkbox :label \"Yes, please spam me.\"}
             {:name :password :type :password}
             {:name :password-confirm :type :password}
@@ -111,6 +118,7 @@
             {:name :note :type :html
              :html [:div.alert.alert-info \"Please make note of this note.\"]}
             {:name :date :type :date-select}
+            {:name :time :type :time-select}
             {:name :flavors :type :checkboxes
              :options [\"Chocolate\" \"Vanilla\" \"Strawberry\" \"Mint\"]}
             {:name :h3 :type :heading :text \"Section 3\"}
@@ -118,14 +126,17 @@
              :placeholder \"Select a state\"}
             {:name :explanation :type :textarea :label \"Explain yourself\"}
             {:name :picture :type :file :title \"Choose a file\"}]
-   :validations [[:required [:full-name :email :password :state]]
-                 [:min-length 8 :password]
+   :validations [[:required [:full-name \"user[email]\" :password :state]]
+                 [:min-length 4 :password]
                  [:equal [:password :password-confirm]]
-                 [:min-length 2 :flavors \"Please select two or more flavors\"]]})
+                 [:min-length 2 :flavors \"Please select two or more flavors\"]]
+   :enctype \"multipart/form-data\"})
 
 (defn show-demo-form [params & {:keys [problems]}]
-  (let [defaults {:spam true
-                  :date (java.util.Date.)}]
+  (let [now (java.util.Date.)
+        defaults {:spam true
+                  :date now
+                  :time now}]
     (layout
       [:h1 \"Formative Demo\"]
       (f/render-form (assoc demo-form
