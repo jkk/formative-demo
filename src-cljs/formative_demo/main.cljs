@@ -25,22 +25,18 @@
    :validations [[:required [:full-name "user[email]" :password :state]]
                  [:min-length 4 :password]
                  [:equal [:password :password-confirm]]
-                 [:min-length 2 :flavors "Please select two or more flavors"]]
-   :enctype "multipart/form-data"})
+                 [:min-length 2 :flavors "Please select two or more flavors"]]})
 
-(defn render-demo-form [params & {:keys [problems]}]
+(defn render-demo-form []
   (let [now (js/Date.)
         defaults {:spam true
                   :date now
                   :time now}]
-    (f/render-form (assoc demo-form
-                          ;:renderer renderer
-                          :values (merge defaults params)
-                          :problems problems))))
+    (f/render-form (assoc demo-form :values defaults))))
 
 (defn main []
   (when-let [container (sel1 "#cljs-container")]
-    (d/append! container (node (render-demo-form {})))
+    (d/append! container (node (render-demo-form)))
     (fd/handle-submit
       demo-form container
       (fn [params]
