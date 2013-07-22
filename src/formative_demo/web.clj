@@ -1,7 +1,9 @@
 (ns formative-demo.web
   (:require [compojure.core :refer [defroutes GET POST ANY]]
             [compojure.handler :refer [site]]
+            [compojure.route :as route]
             [ring.middleware.stacktrace :as trace]
+            [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.adapter.jetty :as jetty]
             [environ.core :refer [env]]
             [formative.core :as f]
@@ -62,6 +64,7 @@
       "h1 { margin-bottom: 20px; }"
       ".form-horizontal .field-group { margin-bottom: 10px; }"
       ".well form, .well .field-group { margin-bottom: 0; }"
+      ".nav-tabs { margin-top: 20px; margin-bottom: 20px; }"
       ".heading-row h3 { margin-bottom: 5px; }"
       ".form-table { width: 100%; }"
       ".form-table th { text-align: left; }"
@@ -74,10 +77,24 @@
       ".form-table .problem th, .form-table .problem td { color: #b94a48; background: #fee; }"]]
     [:body {:onload "prettyPrint()"}
      body]
-    (page/include-js "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js")
     (page/include-js "//google-code-prettify.googlecode.com/svn/trunk/src/prettify.js")
     (page/include-js "//google-code-prettify.googlecode.com/svn/trunk/src/lang-clj.js")
-    (page/include-js "https://raw.github.com/grevory/bootstrap-file-input/master/bootstrap.file-input.js")))
+    (page/include-js "/js/main.js")))
+
+(defn demo-header [active-tab]
+  [:div.header
+   [:h1 "Formative Demo"]
+   [:p "This is a demo of the "
+    [:a {:href "https://github.com/jkk/formative"}
+     "Formative"]
+    " library. Submit the form to see how the data gets validated and processed."]
+   [:p [:a {:href "https://github.com/jkk/formative-demo"}
+     "Full demo source code"]]
+   [:ul.nav.nav-tabs
+    [:li {:class (when (= :clj active-tab) "active")}
+     [:a {:href "/"} "Clojure"]]
+    [:li {:class (when (= :cljs active-tab) "active")}
+     [:a {:href "/cljs"} "ClojureScript"]]]])
 
 (defn show-demo-form [params & {:keys [problems]}]
   (let [renderer (if (:renderer params)
@@ -90,14 +107,7 @@
     (layout
       [:div.pull-right.well.well-small
        (f/render-form (assoc renderer-form :values params))]
-      [:h1 "Formative Demo"]
-      [:p "This is a demo of the "
-       [:a {:href "https://github.com/jkk/formative"}
-        "Formative"]
-       " library for Clojure and ClojureScript. "
-       [:a {:href "https://github.com/jkk/formative-demo"}
-        "View the full demo source code."]]
-      [:p "Submit the form to see how the data gets validated and processed."]
+      (demo-header :clj)
       [:div.pull-left {:style "width: 50%"}
        (f/render-form (assoc demo-form
                              :renderer renderer
@@ -105,9 +115,7 @@
                              :problems problems))]
       [:div.pull-right {:style "width: 47%"}
        [:pre.prettyprint.lang-clj {:style "word-wrap: normal; white-space: pre; overflow: hidden; font-size: 12px; border: none; background: #f8f8f8; padding: 10px"}
-        ";; Simplified source
-
-(def demo-form
+        "(def demo-form
   {:fields [{:name :h1 :type :heading :text \"Section 1\"}
             {:name :full-name}
             {:name \"user[email]\" :type :email}
@@ -158,13 +166,62 @@
         [:pre.prettyprint.lang-clj (with-out-str (pprint values))]
         [:p [:a {:href "/"} "Back to the form"]]))))
 
+(defn show-cljs-demo [params]
+  (layout
+    (demo-header :cljs)
+    [:div#cljs-container.pull-left {:style "width: 50%"}]
+    [:div.pull-right {:style "width: 47%"}
+     [:pre.prettyprint.lang-clj {:style "word-wrap: normal; white-space: pre; overflow: hidden; font-size: 12px; border: none; background: #f8f8f8; padding: 10px"}
+        "(def demo-form
+  {:fields [{:name :h1 :type :heading :text \"Section 1\"}
+            {:name :full-name}
+            {:name \"user[email]\" :type :email}
+            {:name :spam :type :checkbox :label \"Yes, please spam me.\"}
+            {:name :password :type :password}
+            {:name :password-confirm :type :password}
+            {:name :h2 :type :heading :text \"Section 2\"}
+            {:name :note :type :html
+             :html [:div.alert.alert-info \"Please make note of this note.\"]}
+            {:name :date :type :date-select}
+            {:name :time :type :time-select}
+            {:name :flavors :type :checkboxes
+             :options [\"Chocolate\" \"Vanilla\" \"Strawberry\" \"Mint\"]}
+            {:name :h3 :type :heading :text \"Section 3\"}
+            {:name :state :type :us-state
+             :placeholder \"Select a state\"}
+            {:name :explanation :type :textarea :label \"Explain yourself\"}]
+   :validations [[:required [:full-name \"user[email]\" :password :state]]
+                 [:min-length 4 :password]
+                 [:equal [:password :password-confirm]]
+                 [:min-length 2 :flavors \"Please select two or more flavors\"]]
+   :enctype \"multipart/form-data\"})
+
+(defn render-demo-form [params & {:keys [problems]}]
+  (let [now (js/Date.)
+        defaults {:spam true
+                  :date now
+                  :time now}]
+    (f/render-form (assoc demo-form
+                          :values (merge defaults params)
+                          :problems problems))))
+
+(defn main []
+  (when-let [container (sel1 \"#cljs-container\")]
+    (d/append! container (node (render-demo-form {})))
+    (fd/handle-submit
+      demo-form container
+      (fn [params]
+        (js/alert (pr-str params))))))"]]))
+
 (defroutes routes
   (GET "/" [& params] (show-demo-form params))
   (POST "/" [& params] (submit-demo-form params))
+  (GET "/cljs" [& params] (show-cljs-demo params))
+  (route/resources "/" {:root "public"})
   (ANY "*" [] "Not found!"))
 
 (def app
-  (-> #'routes trace/wrap-stacktrace site))
+  (-> #'routes trace/wrap-stacktrace site wrap-gzip))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 5000))]

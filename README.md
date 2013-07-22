@@ -1,6 +1,6 @@
 # Formative Demo
 
-Demo app for the [Formative](https://github.com/jkk/formative) Clojure library.
+Demo app for the [Formative](https://github.com/jkk/formative) library for Clojure and ClojureScript.
 
 See it live at [formative-demo.herokuapp.com](http://formative-demo.herokuapp.com/).
 

@@ -8,3 +8,4 @@ pom.xml
 /.env
 /target
 .settings
+/resources/public/js/main.js
