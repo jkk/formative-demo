@@ -10,7 +10,7 @@
                  [ring/ring-devel "1.2.0"]
                  [amalloy/ring-gzip-middleware "0.1.2"]
                  [environ "0.3.0"]
-                 [formative "0.7.0"]
+                 [formative "0.7.2"]
                  [hiccup "1.0.2"]
                  [prismatic/dommy "0.1.1"]]
   :min-lein-version "2.0.0"

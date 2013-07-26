@@ -18,14 +18,14 @@
             {:name :time :type :time-select}
             {:name :flavors :type :checkboxes
              :options ["Chocolate" "Vanilla" "Strawberry" "Mint"]}
-            {:name :h3 :type :heading :text "Section 3"}
-            {:name :state :type :us-state
-             :placeholder "Select a state"}
-            {:name :explanation :type :textarea :label "Explain yourself"}]
-   :validations [[:required [:full-name "user[email]" :password :state]]
+            {:name :location :type :compound
+             :fields [{:name :city :placeholder "City" :class "input-medium"}
+                      {:name :state :type :us-state :placeholder "Select a state"}]}]
+   :validations [[:required [:full-name "user[email]" :password]]
                  [:min-length 4 :password]
                  [:equal [:password :password-confirm]]
-                 [:min-length 2 :flavors "Please select two or more flavors"]]})
+                 [:min-length 2 :flavors "select two or more flavors"]
+                 [:complete :location]]})
 
 (defn render-demo-form []
   (let [now (js/Date.)
