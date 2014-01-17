@@ -9,3 +9,4 @@ pom.xml
 /target
 .settings
 /resources/public/js/main.js
+/.lein-repl-history

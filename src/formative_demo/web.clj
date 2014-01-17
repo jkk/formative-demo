@@ -50,14 +50,19 @@
              :type :select
              :options ["bootstrap-horizontal"
                        "bootstrap-stacked"
+                       ;"bootstrap3-horizontal"
+                       "bootstrap3-stacked"
                        "table"]
              :onchange "this.form.submit()"}]})
 
-(defn layout [& body]
+(defn layout [opts & body]
   (page/html5
     [:head
      [:title "Formative Demo"]
-     (page/include-css "//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap.min.css")
+     ;; TODO: bootstrap 3
+     (if (#{:bootstrap3-stacked :bootstrap3-horizontal} (:renderer opts))
+       (page/include-css "//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css")
+       (page/include-css "//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap.min.css"))
      (page/include-css "//google-code-prettify.googlecode.com/svn/trunk/src/prettify.css")
      [:style
       "body { margin: 2em; }"
@@ -79,7 +84,9 @@
      body]
     (page/include-js "//google-code-prettify.googlecode.com/svn/trunk/src/prettify.js")
     (page/include-js "//google-code-prettify.googlecode.com/svn/trunk/src/lang-clj.js")
-    (page/include-js "/js/main.js")))
+    #_(page/include-js "/js/goog/base.js")
+    (page/include-js "/js/main.js")
+    #_"<script type=\"text/javascript\">goog.require('formative_demo.main');</script>"))
 
 (defn demo-header [active-tab]
   [:div.header
@@ -105,6 +112,7 @@
                   :date now
                   :time now}]
     (layout
+      {:renderer renderer}
       [:div.pull-right.well.well-small
        (f/render-form (assoc renderer-form :values params))]
       (demo-header :clj)
@@ -162,12 +170,14 @@
   (fp/with-fallback #(show-demo-form params :problems %)
     (let [values (fp/parse-params demo-form params)]
       (layout
+        nil
         [:h1 "Thank you!"]
         [:pre.prettyprint.lang-clj (with-out-str (pprint values))]
         [:p [:a {:href "/"} "Back to the form"]]))))
 
 (defn show-cljs-demo [params]
   (layout
+    nil
     (demo-header :cljs)
     [:div#cljs-container.pull-left {:style "width: 50%"}]
     [:div.pull-right {:style "width: 47%"}
